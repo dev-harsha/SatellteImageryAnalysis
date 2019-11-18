@@ -278,7 +278,7 @@ x_min_shp, x_max_shp, y_min_shp, y_max_shp = get_shp_extent(inShapefile)
 left_idx, top_idx = get_cell_idx(x_min_shp, y_max_shp, top_left_x_coords, top_left_y_coords)
 right_idx, bottom_idx = get_cell_idx(x_max_shp, y_min_shp, top_left_x_coords, top_left_y_coords)
 
-key = 'AIzaSyCC2HwHLNIfDZsUyz63R1bIGIl_HA3x50M'
+key = 'YOUR_API_KEY'
 m = 1
 
 print(left_idx, right_idx)
