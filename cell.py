@@ -1,3 +1,4 @@
+from datetime import date
 import imageio
 from retrying import retry
 import urllib.request
@@ -21,13 +22,14 @@ import urllib
 import pandas as pd
 import numpy as np
 import seaborn as sns
+import matplotlib.pyplot as plt
 get_ipython().run_line_magic('config', "InlineBackend.figure_format = 'retina'")
 
 
 
 
-# file_name = 'C:/Users/hnama/Jupyter/data/DHS/RWHR61FL.DAT'
-# cluster_file = 'C:/Users/hnama/Jupyter/data/DHS/rwanda_clusters_location.csv'
+# file_name = 'C:/Users/tejav/Jupyter/data/DHS/RWHR61FL.DAT'
+# cluster_file = 'C:/Users/tejav/Jupyter/data/DHS/rwanda_clusters_location.csv'
 # cluster_all = []
 # wealth_all = []
 # with open(file_name) as f:
@@ -42,7 +44,7 @@ get_ipython().run_line_magic('config', "InlineBackend.figure_format = 'retina'")
 # df_location = pd.read_csv(cluster_file)[['DHSCLUST', 'LATNUM', 'LONGNUM']]
 # result = cluster_avg_asset.merge(df_location, how='inner', left_on='cluster', right_on='DHSCLUST')[['cluster', 'wlthindf', 'LATNUM', 'LONGNUM']]
 # result.rename(columns={'LATNUM': 'latitude', 'LONGNUM':'longitude'}, inplace=True)
-# result.to_csv('C:/Users/hnama/Jupyter/intermediate_files/rwanda_cluster_avg_asset_2010.csv', index=False)
+# result.to_csv('C:/Users/tejav/Jupyter/intermediate_files/rwanda_cluster_avg_asset_2010.csv', index=False)
 
 
 ########################################### cell 1 ###############################################
@@ -50,33 +52,7 @@ get_ipython().run_line_magic('config', "InlineBackend.figure_format = 'retina'")
 
 
 def read_raster(raster_file):
-    """
-    Function
-    --------
-    read_raster
 
-    Given a raster file, get the pixel size, pixel location, and pixel value
-
-    Parameters
-    ----------
-    raster_file : string
-        Path to the raster file
-
-    Returns
-    -------
-    x_size : float
-        Pixel size
-    top_left_x_coords : numpy.ndarray  shape: (number of columns,)
-        Longitude of the top-left point in each pixel
-    top_left_y_coords : numpy.ndarray  shape: (number of rows,)
-        Latitude of the top-left point in each pixel
-    centroid_x_coords : numpy.ndarray  shape: (number of columns,)
-        Longitude of the centroid in each pixel
-    centroid_y_coords : numpy.ndarray  shape: (number of rows,)
-        Latitude of the centroid in each pixel
-    bands_data : numpy.ndarray  shape: (number of rows, number of columns, 1)
-        Pixel value
-    """
     raster_dataset = gdal.Open(raster_file, gdal.GA_ReadOnly)
     # get project coordination
     proj = raster_dataset.GetProjectionRef()
@@ -109,32 +85,7 @@ def read_raster(raster_file):
 
 # Helper function to get the pixel index of the point
 def get_cell_idx(lon, lat, top_left_x_coords, top_left_y_coords):
-    """
-    Function
-    --------
-    get_cell_idx
-
-    Given a point location and all the pixel locations of the raster file,
-    get the column and row index of the point in the raster
-
-    Parameters
-    ----------
-    lon : float
-        Longitude of the point
-    lat : float
-        Latitude of the point
-    top_left_x_coords : numpy.ndarray  shape: (number of columns,)
-        Longitude of the top-left point in each pixel
-    top_left_y_coords : numpy.ndarray  shape: (number of rows,)
-        Latitude of the top-left point in each pixel
     
-    Returns
-    -------
-    lon_idx : int
-        Column index
-    lat_idx : int
-        Row index
-    """
     lon_idx = np.where(top_left_x_coords < lon)[0][-1]
     lat_idx = np.where(top_left_y_coords > lat)[0][-1]
     return lon_idx, lat_idx
@@ -143,11 +94,10 @@ def get_cell_idx(lon, lat, top_left_x_coords, top_left_y_coords):
 
 ########################################### cell 2 ###############################################
 
-raster_file = 'C:/Users/hnama/Jupyter/data/nighttime_image/F182010.v4d_web.stable_lights.avg_vis.tif'
+raster_file = 'C:/Users/tejav/Jupyter/data/nighttime_image/F182010.v4d_web.stable_lights.avg_vis.tif'
 x_size, top_left_x_coords, top_left_y_coords, centroid_x_coords, centroid_y_coords, bands_data = read_raster(raster_file)
 
-# save the result in compressed format - see https://docs.scipy.org/doc/numpy/reference/generated/numpy.savez.html
-np.savez('C:/Users/hnama/Jupyter/intermediate_files/nightlight.npz', top_left_x_coords=top_left_x_coords, top_left_y_coords=top_left_y_coords, bands_data=bands_data)
+np.savez('C:/Users/tejav/Jupyter/intermediate_files/nightlight.npz', top_left_x_coords=top_left_x_coords, top_left_y_coords=top_left_y_coords, bands_data=bands_data)
 
 
 ########################################### cell 3 ###############################################
@@ -178,9 +128,9 @@ def get_nightlight_feature(sample):
                       'median_': median_, 'std_': std_, 'wealth': wealth})
 
 
-clusters = pd.read_csv('C:/Users/hnama/Jupyter/intermediate_files/rwanda_cluster_avg_asset_2010.csv')
+clusters = pd.read_csv('C:/Users/tejav/Jupyter/intermediate_files/rwanda_cluster_avg_asset_2010.csv')
 data_all = clusters.apply(lambda x: get_nightlight_feature([x['cluster'], x['wlthindf'], x['longitude'], x['latitude']]), axis=1)
-data_all.to_csv('C:/Users/hnama/Jupyter/intermediate_files/DHS_nightlights.csv', index=None)
+data_all.to_csv('C:/Users/tejav/Jupyter/intermediate_files/DHS_nightlights.csv', index=None)
 
 
 
@@ -200,23 +150,6 @@ data_all.to_csv('C:/Users/hnama/Jupyter/intermediate_files/DHS_nightlights.csv',
 
 
 def get_shp_extent(shp_file):
-    """
-    Function
-    --------
-    get_shp_extent
-
-    Given a shapefile, get the extent (boundaries)
-
-    Parameters
-    ----------
-    shp_file : string
-        Path to the shapefile
-    
-    Returns
-    -------
-    extent : tuple
-        Boundary location of the shapefile (x_min, x_max, y_min, y_max)
-    """
     print("shp_file_ext")
     inDriver = ogr.GetDriverByName("ESRI Shapefile")
     inDataSource = inDriver.Open(shp_file, 0)
@@ -233,70 +166,62 @@ def get_shp_extent(shp_file):
 
 
 #@retry(wait_exponential_multiplier=1000, wait_exponential_max=3600000)
-def save_img(url, file_path, file_name):
-    """
-    Function
-    --------
-    save_img
-
-    Given a url of the map, save the image
-
-    Parameters
-    ----------
-    url : string
-        URL of the map from Google Map Static API
-    file_path : string
-        Folder name of the map
-    file_name : string
-        File name
-    
-    Returns
-    -------
-    None
-    """
-    
+def save_img(url, file_path, file_name):  
     # a = urllib.request.urlopen(url).read()
     # print("a")
     # b = BytesIO(a)
     # print("b")
-    image = imageio.imread(url)
+    image = plt.imread(url)
     print("image")
-    # when no image exists, api will return an image with the same color. 
-    # and in the center of the image, it said'Sorry. We have no imagery here'.
-    # we should drop these images if large area of the image has the same color.
+
     if np.array_equal(image[:,:10,:],image[:,10:20,:]):
         print("=======")
         pass
     else:
         print('---')
-        imageio.imwrite(file_path + file_name, image[50:450, :, :])
+        plt.imsave(file_path + file_name, image[50:450, :, :])
 
-# Now read in the shapefile for Rwanda and extract the edges of the country
-inShapefile = "C:/Users/hnama/Jupyter/data/shp/Sector_Boundary_2012/Sector_Boundary_2012.shp"
+# reading shapefile
+inShapefile = "C:/Users/tejav/Jupyter/data/shp/Sector_Boundary_2012/Sector_Boundary_2012.shp"
 x_min_shp, x_max_shp, y_min_shp, y_max_shp = get_shp_extent(inShapefile)
 
 left_idx, top_idx = get_cell_idx(x_min_shp, y_max_shp, top_left_x_coords, top_left_y_coords)
 right_idx, bottom_idx = get_cell_idx(x_max_shp, y_min_shp, top_left_x_coords, top_left_y_coords)
 
-key = 'YOUR_API_KEY'
+key_file = open("C:/Users/tejav/Jupyter/data/key.txt","r")
+
+key = key_file.readline()
 m = 1
+
+
+today_date = date.today()
+date_format = today_date.strftime("%d%m%Y")
+
+log_file=open("log.txt_" + date_format,"a")
+
+log_file.write(left_idx + " " + right_idx)
+log_file.write(top_idx + " " + bottom_idx)
 
 print(left_idx, right_idx)
 print(top_idx, bottom_idx)
 
-for i in range(left_idx, right_idx + 1):
-    for j in range(top_idx, bottom_idx + 1):
+for i in range(25280, right_idx + 1):
+    
+    for j in range(9219, bottom_idx + 1):
         lon = centroid_x_coords[i]
         lat = centroid_y_coords[j]
         print(lon,lat)
-        url = 'https://maps.googleapis.com/maps/api/staticmap?center=' + str(lat) + ',' + str(lon) + '&zoom=16&size=400x500&maptype=satellite&key=' + key
+        url = 'https://maps.googleapis.com/maps/api/staticmap?center=' + str(lat) + ',' + str(lon) + '&zoom=16&size=400x400&maptype=satellite&key=' + key
         lightness = bands_data[j, i, 0]
-        file_path = 'C:/Users/hnama/Jupyter/google_image/' + str(lightness) + '/'
+        file_path = 'C:/Users/tejav/Jupyter/google_image/' + str(lightness) + '/'
         if not os.path.isdir(file_path):
             os.makedirs(file_path)
         file_name = str(i) + '_' + str(j) +'.jpg'
         print(url, "--", file_name, file_path)
         save_img(url, file_path, file_name)
+        log_str= str(i) +" "+ str(j) +"\n"+url+"\n"+ file_name +","+ file_path + "\n"
+        log_file.write(log_str)
+        log_file.write("--------------------------------\n")
         print(file_path, file_name)
         if m % 100 == 0:
             print(m)
