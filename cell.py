@@ -199,14 +199,16 @@ date_format = today_date.strftime("%d%m%Y")
 
 log_file=open("log.txt_" + date_format,"a")
 
-log_file.write(left_idx + " " + right_idx)
-log_file.write(top_idx + " " + bottom_idx)
+log_file.write(str(left_idx) + " " + str(right_idx) + "\n")
+log_file.write(str(top_idx) + " " + str(bottom_idx))
+
+log_file.close()
 
 print(left_idx, right_idx)
 print(top_idx, bottom_idx)
 
 for i in range(25280, right_idx + 1):
-    
+    log_file=open("log.txt_" + date_format,"a")
     for j in range(9219, bottom_idx + 1):
         lon = centroid_x_coords[i]
         lat = centroid_y_coords[j]
