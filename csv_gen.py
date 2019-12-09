@@ -1,3 +1,4 @@
+from datetime import datetime
 from datetime import date
 import imageio
 from retrying import retry
@@ -54,7 +55,7 @@ date_format = today_date.strftime("%d%m%Y")
 
 
 log_file=open("csv_log_" + date_format + ".txt","a")
-log_file.write("---------- New Logs ------------\n")
+log_file.write(str(datetime.now()) + " ---------- New Logs ------------\n")
 
 feature_all = []
 a = 0
