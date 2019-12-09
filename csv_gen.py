@@ -18,7 +18,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 'exec(%matplotlib inline)'
-# get_ipython().run_line_magic('matplotlib', 'inline')
 import urllib
 import pandas as pd
 import numpy as np
@@ -31,9 +30,10 @@ images_name = []
 for i in range(64):
     dir_ = 'data/google_image/' + str(i) + '/'
     if os.path.exists(dir_):
-        image_files = os.listdir(dir_)
+        image_files = os.listdir(dir_)        
         images_name.append(image_files)
-
+    else:
+        images_name.append([])
 
 def get_image_basic_feature(image_file):
     #image = ndimage.imread(image_file, mode='RGB')
@@ -62,10 +62,13 @@ a = 0
 t1 = time.time()
 for i, images in enumerate(images_name):
     path = 'data/google_image/' + str(i) + '/'
+    print(i)
     for image in images:
         x, y = [int(idx) for idx in image[:-4].split('_')]
         file_ = path + image
+        
         if os.path.exists(file_):
+            print(i, file_)
             print(file_)
             log_file.write(file_ + "\n")
             feature = get_image_basic_feature(file_)
@@ -83,4 +86,4 @@ for i, images in enumerate(images_name):
             a += 1
 
 feature_all = np.asarray(feature_all)
-np.savetxt('intermediate_files/google_image_features_basic.csv', feature_all)
+np.savetxt('intermediate_files/google_image_features_basic.csv', feature_all, delimiter=",")
